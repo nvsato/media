@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Oksigen: Eksplorasi Sistem Pernapasan Manusia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #4a9df8;
+            --secondary-blue: #a6d0ff;
+            --accent-green: #2ecc71;
+            --accent-orange: #f39c12;
+            --danger-red: #e74c3c;
+            --light-bg: #f0f8ff;
+            --text-dark: #2c3e50;
+            --level-locked: #bdc3c7;
+            --quiz-bg: #fff9e6;
+            --practice-bg: #e8f6f3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #e3f2fd 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Overlay untuk mengunci akses selama kuis */
+        .quiz-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .quiz-overlay.active {
+            display: flex;
+        }
+
+        .overlay-message {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .overlay-message h3 {
+            color: var(--danger-red);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(90deg, var(--primary-blue), #1abc9c);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(74, 157, 248, 0.3);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .progress-indicator {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        /* Level Cards - DITAMBAHKAN CLASS LOCK */
+        .level-section {
+            max-width: 1000px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .level-section.locked {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            border-bottom: 4px dashed var(--accent-orange);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .level-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .level-card {
+            background: white;
+            width: 180px;
+            padding: 25px 15px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card:hover:not(.locked) {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.15);
+        }
+
+        .level-card.locked {
+            background: var(--level-locked);
+            color: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: var(--danger-red);
+            font-size: 1.5rem;
+        }
+
+        /* Main Content */
+        .content-area {
+            background: white;
+            max-width: 1000px;
+            margin: 0 auto 30px;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            min-height: 500px;
+            display: none;
+        }
+
+        .content-area.active { display: block; }
+
+        /* Tombol Kembali - DISEMBUNYIKAN SAAT KUIS */
+        .back-button {
+            background: var(--secondary-blue);
+            color: var(--text-dark);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .back-button:hover { background: var(--primary-blue); color: white; }
+        
+        .back-button.hidden {
+            display: none !important;
+        }
+
+        /* Tab System */
+        .tab-menu {
+            display: flex;
+            background: #e8f4fc;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            background: transparent;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .tab-button.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .tab-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8f9fa;
+        }
+
+        .tab-button:hover:not(.active):not(:disabled) {
+            background: rgba(74, 157, 248, 0.1);
+        }
+
+        /* Tab Panels */
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-panel.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Enhanced Materi Panel - DIPERLUAS */
+        .materi-panel h2 {
+            color: var(--primary-blue);
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--secondary-blue);
+        }
+
+        .materi-content {
+            font-size: 1.15rem;
+            line-height: 1.8;
+        }
+
+        .concept-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-blue);
+            position: relative;
+        }
+
+        .concept-box h3 {
+            color: var(--accent-green);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .analogy-container {
+            background: #fff9e6;
+            border: 2px dashed var(--accent-orange);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+        }
+
+        .analogy-container h4 {
+            color: var(--accent-orange);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .fact-highlight {
+            background: #e8f6f3;
+            border-left: 6px solid var(--accent-green);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 15px 15px 0;
+        }
+
+        .fact-highlight h4 {
+            color: var(--accent-green);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .warning-box {
+            background: #fef3e6;
+            border: 2px solid var(--accent-orange);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .warning-box h4 {
+            color: #e67e22;
+            margin-bottom: 10px;
+        }
+
+        /* Decision Box */
+        .decision-box {
+            background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 40px;
+            border: 3px solid var(--secondary-blue);
+        }
+
+        .decision-box h3 {
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .decision-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .decision-btn {
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 250px;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .practice-btn { background: var(--accent-orange); color: white; }
+        .practice-btn:hover { background: #e67e22; transform: scale(1.05); }
+
+        .quiz-btn { background: var(--accent-green); color: white; }
+        .quiz-btn:hover { background: #27ae60; transform: scale(1.05); }
+
+        /* Quiz & Practice Panels */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, var(--accent-green), #27ae60);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .difficulty-badge {
+            background: var(--primary-blue);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .question-container {
+            background: var(--quiz-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #ffecb3;
+        }
+
+        .practice-container {
+            background: var(--practice-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #b2dfdb;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid #dee2e6;
+            padding: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            text-align: left;
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .option:hover { border-color: var(--primary-blue); background: #f0f8ff; }
+        .option.selected { border-color: var(--accent-green); background: #d5f4e6; }
+        .option.correct { border-color: var(--accent-green); background: #d4edda; }
+        .option.incorrect { border-color: var(--danger-red); background: #f8d7da; }
+
+        .option-letter {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .option.selected .option-letter {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .quiz-button {
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn { background: var(--accent-green); color: white; }
+        .submit-btn:hover:not(:disabled) { background: #27ae60; }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .next-btn { background: var(--primary-blue); color: white; }
+        .next-btn:hover { background: #2980b9; }
+
+        /* PENJELASAN JAWABAN - TAMPIL SETIAP JAWABAN */
+        .explanation-box {
+            background: #e8f4fc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border-left: 4px solid var(--primary-blue);
+            animation: fadeIn 0.5s;
+        }
+
+        .explanation-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .result-message {
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .result-success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .result-fail {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .lock-notice {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2rem;
+            border: 2px solid #f5c6cb;
+        }
+
+        /* Simulation Panel */
+        .simulation-box {
+            background: #f0f8ff;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            padding-top: 25px;
+            border-top: 2px dashed #bdc3c7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .progress-indicator { position: static; margin-top: 15px; }
+            .level-card { width: 100%; max-width: 250px; }
+            .tab-menu { flex-direction: column; }
+            .tab-button { padding: 15px; }
+            .decision-buttons { flex-direction: column; }
+            .decision-btn { min-width: 100%; }
+            .options-grid { grid-template-columns: 1fr; }
+            .quiz-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay untuk mengunci akses selama kuis -->
+    <div class="quiz-overlay" id="quizOverlay">
+        <div class="overlay-message">
+            <h3><i class="fas fa-lock"></i> Kuis Sedang Berlangsung!</h3>
+            <p>Kamu sedang mengerjakan Kuis Penilaian. Selesaikan semua soal terlebih dahulu sebelum kembali ke menu level.</p>
+            <p><strong>Jumlah soal yang tersisa: <span id="remainingQuestions">10</span></strong></p>
+            <button onclick="closeOverlay()" style="padding: 12px 30px; background: var(--primary-blue); color: white; border: none; border-radius: 10px; margin-top: 20px; cursor: pointer;">
+                <i class="fas fa-check"></i> Lanjutkan Kuis
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1><i class="fas fa-lungs"></i> Petualangan Oksigen</h1>
+        <p>Eksplorasi mendalam sistem pernapasan manusia untuk siswa kelas 5 SD</p>
+        <div class="progress-indicator">
+            <i class="fas fa-user-graduate"></i> Level: <span id="currentProgress">1</span>/3
+        </div>
+    </header>
+
+    <!-- Level Selection -->
+    <section class="level-section" id="levelSection">
+        <h2 class="section-title"><i class="fas fa-layer-group"></i> Pilih Level Pembelajaran</h2>
+        <div class="level-container" id="levelContainer">
+            <!-- Level cards will be generated here -->
+        </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <main class="content-area" id="mainContent">
+        <!-- Tombol Kembali - AKAN DISEMBUNYIKAN SAAT KUIS -->
+        <button class="back-button" id="backButton"><i class="fas fa-arrow-left"></i> Kembali ke Level</button>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-menu" id="tabMenu">
+            <button class="tab-button active" data-tab="materi" id="tabMateri">
+                <i class="fas fa-book-open"></i> Materi Lengkap
+            </button>
+            <button class="tab-button" data-tab="simulasi" id="tabSimulasi">
+                <i class="fas fa-play-circle"></i> Simulasi Interaktif
+            </button>
+            <button class="tab-button" data-tab="kuis" id="tabKuis">
+                <i class="fas fa-star"></i> Kuis Penilaian
+            </button>
+            <button class="tab-button" data-tab="latihan" id="tabLatihan">
+                <i class="fas fa-dumbbell"></i> Mode Latihan
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Materi Panel -->
+            <div class="tab-panel active" id="materiPanel">
+                <div class="materi-panel" id="materiContent">
+                    <!-- Materi will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Simulasi Panel -->
+            <div class="tab-panel" id="simulasiPanel">
+                <div class="simulasi-container">
+                    <h2><i class="fas fa-wind"></i> Simulasi Interaktif</h2>
+                    <div id="simulasiContent">
+                        <!-- Simulasi content will be loaded here -->
+                    </div>
+                    <div class="decision-box" id="decisionBox" style="display: none;">
+                        <h3><i class="fas fa-crossroads"></i> Langkah Selanjutnya</h3>
+                        <p>Kamu telah menyelesaikan materi dan simulasi. Pilih tahap berikutnya:</p>
+                        <div class="decision-buttons">
+                            <button class="decision-btn practice-btn" id="goToPracticeBtn">
+                                <i class="fas fa-dumbbell"></i> Mode Latihan
+                                <small>Berlatih dengan soal serupa untuk persiapan</small>
+                            </button>
+                            <button class="decision-btn quiz-btn" id="goToQuizBtn">
+                                <i class="fas fa-star"></i> Kuis Penilaian
+                                <small>Uji pemahaman dengan soal acak yang menantang</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kuis Panel -->
+            <div class="tab-panel" id="kuisPanel">
+                <div class="quiz-panel">
+                    <div class="quiz-header">
+                        <h2><i class="fas fa-star"></i> Kuis Penilaian - <span id="currentLevelDisplay">1</span></h2>
+                        <div class="difficulty-badge">
+                            <i class="fas fa-random"></i> Soal & Opsi Diacak
+                        </div>
+                    </div>
+                    <div class="lock-notice" id="quizLockNotice" style="display: none;">
+                        <i class="fas fa-lock"></i> <strong>KUIS SEDANG BERLANGSUNG!</strong><br>
+                        Selesaikan semua soal untuk kembali ke materi. Tidak bisa keluar selama kuis!
+                    </div>
+                    <div id="quizContent">
+                        <!-- Quiz content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latihan Panel -->
+            <div class="tab-panel" id="latihanPanel">
+                <div class="latihan-panel">
+                    <div class="quiz-header">
+                        <h2><i class="fas fa-dumbbell"></i> Mode Latihan - Level <span id="latihanLevelDisplay">1</span></h2>
+                        <div class="difficulty-badge" style="background: var(--accent-orange);">
+                            <i class="fas fa-lightbulb"></i> Soal Latihan
+                        </div>
+                    </div>
+                    <div id="latihanContent">
+                        <!-- Practice content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Petualangan Oksigen &copy; 2025 - Media Pembelajaran Interaktif untuk Kelas 5 SD</p>
+        <p><i class="fas fa-user-graduate"></i> Tugas Ujian Akhir Semester | Sistem Pernapasan Manusia</p>
+    </footer>
+
+    <script>
+        // ==================== KONFIGURASI ====================
+        const CONFIG = {
+            minPassingScore: 80,
+            pointsPerQuestion: 10,
+            questionsPerLevel: 10,
+            totalLevels: 3
+        };
+
+        // ==================== STATE APLIKASI ====================
+        let appState = {
+            currentLevel: 1,
+            unlockedLevel: 1,
+            scores: {1: 0, 2: 0, 3: 0},
+            practiceScores: {1: 0, 2: 0, 3: 0},
+            currentTab: 'materi',
+            isQuizActive: false,
+            hasSeenSimulation: false
+        };
+
+        let quizState = {
+            questions: [],
+            shuffledQuestions: [],
+            currentIndex: 0,
+            selectedAnswer: null,
+            score: 0,
+            userAnswers: []
+        };
+
+        let practiceState = {
+            questions: [],
+            shuffledQuestions: [],
+            currentIndex: 0,
+            selectedAnswer: null,
+            score: 0
+        };
+
+        // ==================== FUNGSI UTILITAS ====================
+        
+        // Fungsi untuk mengacak array (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Fungsi untuk mengacak soal dan opsi jawaban
+        function shuffleQuestion(question) {
+            // Acak urutan opsi jawaban
+            const options = [...question.options];
+            const correctAnswer = options[question.correct];
+            
+            // Acak urutan options
+            const shuffledOptions = shuffleArray(options);
+            
+            // Temukan posisi jawaban benar yang baru
+            const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
+            
+            return {
+                q: question.q,
+                options: shuffledOptions,
+                correct: newCorrectIndex,
+                originalCorrect: question.correct,
+                explanation: question.explanation
+            };
+        }
+
+        // ==================== DATABASE MATERI YANG LEBIH DETAIL ====================
+
+        const materiDatabase = {
+            1: {
+                title: "Level 1: Organ Pernapasan & Jalan Udara",
+                icon: "fas fa-lungs",
+                content: `
+                    <div class="concept-box">
+                        <h3><i class="fas fa-door-open"></i> Bagian 1: Pintu Masuk - Hidung dan Rongga Hidung</h3>
+                        <p><strong>Hidung adalah pintu utama</strong> udara masuk ke tubuh kita. Mari kita pelajari bagian-bagiannya:</p>
+                        
+                        <div class="analogy-container">
+                            <h4><i class="fas fa-lightbulb"></i> Analogi: Pos Pemeriksaan Bandara</h4>
+                            <p>Bayangkan hidung seperti <strong>pos pemeriksaan bandara</strong> yang sangat canggih:
+                            <br>• <strong>Rambut hidung</strong> = Petugas keamanan yang menyaring barang berbahaya
+                            <br>• <strong>Lendir (ingus)</strong> = Scanner yang mendeteksi benda asing
+                            <br>• <strong>Pembuluh darah</strong> = Pemanas ruangan yang menghangatkan udara</p>
+                        </div>
+                        
+                        <p><strong>Fungsi Detail Setiap Bagian Hidung:</strong></p>
+                        <ul>
+                            <li><strong>Lubang Hidung (Nares)</strong>: Terdapat dua lubang yang bisa melebar atau menyempit</li>
+                            <li><strong>Rongga Hidung (Cavum Nasalis)</strong>: Ruang kosong di belakang hidung, dilapisi selaput lendir</li>
+                            <li><strong>Konka (Turbinasi)</strong>: Lipatan dinding rongga hidung yang memperluas permukaan</li>
+                            <li><strong>Sel Olfaktori</strong>: Sel penciuman yang bisa mengenali ribuan bau berbeda</li>
+                            <li><strong>Sinus Paranasal</strong>: Rongga tulang wajah yang membantu meringankan tulang kepala</li>
+                        </ul>
+                        
+                        <div class="fact-highlight">
+                            <h4><i class="fas fa-microscope"></i> Fakta Ilmiah Menarik!</h4>
+                            <p>Setiap hari, hidung kita:
+                            <br>1. Menghangatkan udara dari suhu ruangan (25°C) menjadi 37°C (suhu tubuh)
+                            <br>2. Melembabkan udara dengan menambahkan uap air
+                            <br>3. Menyaring sekitar <strong>10.000 liter udara</strong> yang kita hirup!</p>
+                        </div>
+                    </div>
+
+                    <div class="concept-box">
+                        <h3><i class="fas fa-road"></i> Bagian 2: Jalan Udara - Dari Tenggorokan ke Paru-Paru</h3>
+                        
+                        <p>Setelah udara melewati hidung, ia melanjutkan perjalanan melalui:</p>
+                        
+                        <p><strong>A. Faring (Tenggorokan Bagian Atas)</strong></p>
+                        <p>Faring adalah <strong>persimpangan 3 jalan</strong>:
+                        <br>1. <strong>Jalan udara</strong>: ke laring → trakea → paru-paru
+                        <br>2. <strong>Jalan makanan</strong>: ke esofagus → lambung
+                        <br>3. <strong>Jalan suara</strong>: ke telinga tengah melalui tuba Eustachius</p>
+                        
+                        <div class="warning-box">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Mekanisme Penting: Katup Epiglotis</h4>
+                            <p>Epiglotis adalah <strong>katup kecil berbentuk daun</strong> yang:
+                            <br>• <strong>Saat bernapas</strong>: Membuka jalan ke laring
+                            <br>• <strong>Saat menelan</strong>: Menutup laring seperti tutup botol
+                            <br>• <strong>Jika gagal</strong>: Makanan masuk ke trakea → tersedak!</p>
+                        </div>
+                        
+                        <p><strong>B. Laring (Kotak Suara)</strong></p>
+                        <p>Laring adalah "pabrik suara" kita:
+                        <br>• Terdiri dari <strong>9 tulang rawan</strong> yang saling terhubung
+                        <br>• Memiliki <strong>2 pita suara</strong> yang bergetar saat udara lewat
+                        <br>• Pada laki-laki dewasa, pita suara lebih panjang (lebih rendah) 
+                        <br>• Pada perempuan dan anak-anak, pita suara lebih pendek (lebih tinggi)</p>
+                        
+                        <p><strong>C. Trakea (Batang Tenggorokan)</strong></p>
+                        <p>Trakea seperti <strong>pipa vacuum cleaner</strong>:
+                        <br>• Panjang: 10-12 cm (sepanjang pensil)
+                        <br>• Terdiri dari <strong>16-20 cincin tulang rawan berbentuk C</strong>
+                        <br>• Cincin berbentuk C mencegah trakea kempis saat menghirup udara
+                        <br>• Dilapisi <strong>silia (rambut getar)</strong> yang bergerak seperti gelombang</p>
+                        
+                        <div class="fact-highlight">
+                            <h4><i class="fas fa-tachometer-alt"></i> Kecepatan Silia Luar Biasa!</h4>
+                            <p>Silia di trakea:
+                            <br>• Bergetar <strong>1.000-1.500 kali per menit</strong>
+                            <br>• Mendorong lendir ke atas dengan kecepatan <strong>1-2 cm per menit</strong>
+                            <br>• Dalam sehari, mendorong sekitar <strong>100 ml lendir</strong> ke faring</p>
+                        </div>
+                    </div>
+
+                    <div class="concept-box">
+                        <h3><i class="fas fa-tree"></i> Bagian 3: Pohon Pernapasan - Bronkus sampai Alveolus</h3>
+                        
+                        <p>Di dalam rongga dada, trakea bercabang membentuk <strong>"pohon bronkial"</strong>:</p>
+                        
+                        <p><strong>A. Percabangan Utama: Bronkus</strong></p>
+                        <p>Trakea bercabang menjadi 2 bronkus:
+                        <br>• <strong>Bronkus kanan</strong>: Lebih pendek (2,5 cm), lebih lebar, lebih vertikal
+                        <br>• <strong>Bronkus kiri</strong>: Lebih panjang (5 cm), lebih sempit, lebih horizontal
+                        <br>• Perbedaan ini karena paru kanan harus memberi tempat pada hati di bawahnya</p>
+                        
+                        <p><strong>B. Percabangan Kecil: Bronkiolus</strong></p>
+                        <p>Bronkus terus bercabang seperti pohon:
+                        <br>• <strong>23 kali percabangan</strong> dari trakea sampai alveolus
+                        <br>• Semakin kecil, dindingnya semakin tipis
+                        <br>• Bronkiolus terkecil disebut <strong>bronkiolus terminalis</strong>
+                        <br>• Tidak memiliki tulang rawan, hanya otot polos</p>
+                        
+                        <p><strong>C. Ujung Percabangan: Alveolus</strong></p>
+                        <p>Alveolus adalah <strong>"terminal"</strong> di ujung bronkiolus:
+                        <br>• Bentuk seperti <strong>sekumpulan buah anggur</strong>
+                        <br>• Dinding setipis <strong>0,2 mikrometer</strong> (1/300 rambut manusia)
+                        <br>• Dilapisi cairan <strong>surfaktan</strong> yang mencegah alveolus kempis
+                        <br>• Dikelilingi jaringan <strong>kapiler darah</strong> yang sangat padat</p>
+                        
+                        <div class="analogy-container">
+                            <h4><i class="fas fa-industry"></i> Analogi: Pabrik Oksigen Mini</h4>
+                            <p>Setiap alveolus seperti <strong>pabrik mini</strong> yang bekerja 24 jam:
+                            <br>• <strong>Bahan baku</strong>: Udara kaya oksigen
+                            <br>• <strong>Mesin</strong>: Dinding alveolus dan kapiler darah
+                            <br>• <strong>Produk</strong>: Oksigen murni untuk darah
+                            <br>• <strong>Limbah</strong>: Karbon dioksida yang dikeluarkan
+                            <br>• <strong>Pekerja</strong>: Sel darah merah (eritrosit)</p>
+                        </div>
+                    </div>
+
+                    <div class="concept-box">
+                        <h3><i class="fas fa-shield-alt"></i> Bagian 4: Sistem Pertahanan & Perlindungan</h3>
+                        
+                        <p>Tubuh kita memiliki <strong>5 lapis pertahanan</strong> untuk melindungi paru-paru:</p>
+                        
+                        <table style="width:100%; border-collapse:collapse; margin:15px 0;">
+                            <thead style="background:#e3f2fd;">
+                                <tr>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Lapis</th>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Pertahanan</th>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Fungsi</th>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Contoh Ancaman</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center; font-weight:bold;">1</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Rambut Hidung</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Menyaring partikel besar (>10μm)</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Debu, serbuk sari, bulu hewan</td>
+                                </tr>
+                                <tr style="background:#f5f5f5;">
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center; font-weight:bold;">2</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Lendir & Silia</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Menjebak & mengeluarkan partikel kecil</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Bakteri, virus, partikel halus</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center; font-weight:bold;">3</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Refleks Batuk & Bersin</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Mengeluarkan benda asing dengan cepat</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Makanan, minuman yang salah jalan</td>
+                                </tr>
+                                <tr style="background:#f5f5f5;">
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center; font-weight:bold;">4</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Sel Imun (Makrofag)</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Memakan bakteri dan virus</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Patogen yang lolos dari pertahanan atas</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center; font-weight:bold;">5</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Antibodi & Sistem Imun</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Mengenali dan menghancurkan patogen spesifik</td>
+                                    <td style="padding:10px; border:1px solid #ddd;">Virus influenza, bakteri tuberkulosis</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="fact-highlight">
+                            <h4><i class="fas fa-calculator"></i> Data Luar Biasa Sistem Pernapasan</h4>
+                            <p>Dalam sehari, sistem pernapasan kita:
+                            <br>• Memproses <strong>10.000-15.000 liter udara</strong>
+                            <br>• Menghasilkan <strong>100-150 ml lendir</strong>
+                            <br>• Melakukan <strong>20.000-25.000 kali pertukaran gas</strong>
+                            <br>• Mengangkut <strong>550 liter oksigen</strong> ke seluruh tubuh
+                            <br>• Mengeluarkan <strong>450 liter karbon dioksida</strong></p>
+                        </div>
+                        
+                        <div class="warning-box">
+                            <h4><i class="fas fa-heartbeat"></i> Hubungan dengan Sistem Lain</h4>
+                            <p>Sistem pernapasan bekerja sama dengan:
+                            <br>1. <strong>Sistem Peredaran Darah</strong>: Mengangkut oksigen ke sel dan CO₂ dari sel
+                            <br>2. <strong>Sistem Saraf</strong>: Mengatur kecepatan dan kedalaman napas
+                            <br>3. <strong>Sistem Imun</strong>: Melindungi dari infeksi
+                            <br>4. <strong>Sistem Ekskresi</strong>: Mengeluarkan CO₂ (limbah metabolisme)</p>
+                        </div>
+                    </div>
+
+                    <div class="concept-box">
+                        <h3><i class="fas fa-graduation-cap"></i> Ringkasan Level 1: Peta Perjalanan Udara</h3>
+                        
+                        <p><strong>Rute Lengkap Udara Masuk:</strong></p>
+                        <ol style="margin-left: 20px; margin-bottom: 20px;">
+                            <li><strong>Udara luar</strong> → masuk melalui <strong>lubang hidung</strong></li>
+                            <li>Melewati <strong>rongga hidung</strong> (disaring, dihangatkan, dilembabkan)</li>
+                            <li>Masuk ke <strong>faring</strong> (persimpangan tenggorokan)</li>
+                            <li>Melalui <strong>laring</strong> (kotak suara, dilindungi epiglotis)</li>
+                            <li>Turun melalui <strong>trakea</strong> (batang tenggorokan dengan cincin tulang rawan)</li>
+                            <li>Bercabang ke <strong>bronkus kanan & kiri</strong></li>
+                            <li>Terus bercabang menjadi <strong>bronkiolus</strong> (23 kali percabangan)</li>
+                            <li>Sampai di <strong>alveolus</strong> (kantong udara tempat pertukaran gas)</li>
+                            <li><strong>Oksigen</strong> masuk ke darah, <strong>karbon dioksida</strong> keluar ke udara</li>
+                        </ol>
+                        
+                        <div class="fact-highlight">
+                            <h4><i class="fas fa-flag-checkered"></i> Tantangan untuk Kamu!</h4>
+                            <p>Sekarang kamu sudah memahami <strong>seluruh rute perjalanan udara</strong> dalam tubuh.
+                            <br>Ingat: Setiap organ memiliki fungsi khusus yang saling melengkapi.
+                            <br>Bersiaplah untuk Kuis Penilaian dengan mempelajari:
+                            <br>1. Nama-nama organ dalam Bahasa Indonesia dan ilmiah
+                            <br>2. Fungsi spesifik setiap organ
+                            <br>3. Urutan perjalanan udara dari hidung sampai alveolus</p>
+                        </div>
+                    </div>
+                `,
+                simulation: `
+                    <div class="simulation-box">
+                        <h3><i class="fas fa-route"></i> Simulasi Interaktif: Perjalanan Oksigen</h3>
+                        <p>Ikuti perjalanan satu molekul oksigen dari udara luar sampai ke sel tubuh:</p>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin:30px 0; flex-wrap:wrap;">
+                            <div style="text-align:center; flex:1; min-width:120px; margin:10px;">
+                                <div style="width:80px; height:80px; background:#4a9df8; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; color:white; font-size:2rem; animation:pulse 2s infinite;">👃</div>
+                                <p><strong>1. Hidung</strong><br>Pintu masuk utama</p>
+                            </div>
+                            <div style="margin-top:40px;">→</div>
+                            <div style="text-align:center; flex:1; min-width:120px; margin:10px;">
+                                <div style="width:80px; height:80px; background:#2ecc71; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; color:white; font-size:2rem; animation:pulse 2s infinite 0.5s;">👄</div>
+                                <p><strong>2. Faring</strong><br>Persimpangan 3 jalan</p>
+                            </div>
+                            <div style="margin-top:40px;">→</div>
+                            <div style="text-align:center; flex:1; min-width:120px; margin:10px;">
+                                <div style="width:80px; height:80px; background:#f39c12; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; color:white; font-size:2rem; animation:pulse 2s infinite 1s;">🎤</div>
+                                <p><strong>3. Laring</strong><br>Kotak suara</p>
+                            </div>
+                            <div style="margin-top:40px;">→</div>
+                            <div style="text-align:center; flex:1; min-width:120px; margin:10px;">
+                                <div style="width:80px; height:80px; background:#e74c3c; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; color:white; font-size:2rem; animation:pulse 2s infinite 1.5s;">🌳</div>
+                                <p><strong>4. Pohon Bronkial</strong><br>23 percabangan</p>
+                            </div>
+                            <div style="margin-top:40px;">→</div>
+                            <div style="text-align:center; flex:1; min-width:120px; margin:10px;">
+                                <div style="width:80px; height:80px; background:#9b59b6; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; color:white; font-size:2rem; animation:pulse 2s infinite 2s;">💨</div>
+                                <p><strong>5. Alveolus</strong><br>Pertukaran gas</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background:#f0f8ff; padding:20px; border-radius:15px; margin:20px 0;">
+                            <h4><i class="fas fa-clock"></i> Waktu Perjalanan Udara</h4>
+                            <p>Udara hanya butuh <strong>2-3 detik</strong> untuk:
+                            <br>• Masuk melalui hidung
+                            <br>• Melewati semua saluran
+                            <br>• Sampai di alveolus
+                            <br>• Melakukan pertukaran gas</p>
+                            <p style="margin-top:10px; font-size:0.9rem; color:#666;">*Kecepatan ini bisa berubah tergantung kecepatan napas</p>
+                        </div>
+                        
+                        <p style="margin-top:20px;">
+                            <button id="simulasiSelesaiBtn" style="padding:15px 30px; background:var(--accent-green); color:white; border:none; border-radius:10px; font-size:1.2rem; cursor:pointer;">
+                                <i class="fas fa-check-circle"></i> Saya Sudah Paham Seluruh Rute Pernapasan!
+                            </button>
+                        </p>
+                    </div>
+                `
+            },
+            2: {
+                title: "Level 2: Mekanisme & Fisiologi Pernapasan",
+                icon: "fas fa-wind",
+                content: `
+                    <div class="concept-box">
+                        <h3><i class="fas fa-cogs"></i> Bagian 1: Mesin Pernapasan - Sistem Otot</h3>
+                        
+                        <p>Pernapasan terjadi karena kerja sama <strong>20+ jenis otot</strong> yang dikelompokkan menjadi:</p>
+                        
+                        <div class="analogy-container">
+                            <h4><i class="fas fa-robot"></i> Analogi: Tim Robot Terkoordinasi</h4>
+                            <p>Bayangkan otot pernapasan seperti <strong>tim robot</strong> dalam pabrik:
+                            <br>• <strong>Diafragma</strong> = Robot utama yang melakukan 70% pekerjaan
+                            <br>• <strong>Otot interkostal</strong> = Robot pembantu yang mengangkat tulang rusuk
+                            <br>• <strong>Otot aksesori</strong> = Robot cadangan yang bekerja saat butuh tenaga ekstra
+                            <br>• <strong>Otot perut</strong> = Robot pembersih yang membantu menghembus napas kuat</p>
+                        </div>
+                        
+                        <p><strong>A. Otot Inspirasi (Menarik Napas)</strong></p>
+                        <ul>
+                            <li><strong>Diafragma</strong>: Otot utama berbentuk kubah, tebal 3-5 mm
+                                <ul style="margin-left:20px; margin-top:5px;">
+                                    <li>Berkontraksi 50.000+ kali sehari</li>
+                                    <li>Menurunkan 1-2 cm saat napas biasa, 10 cm saat napas dalam</li>
+                                    <li>Menambah volume rongga dada 500-1000 ml</li>
+                                </ul>
+                            </li>
+                            <li><strong>Otot Interkostal Eksternal</strong>: Mengangkat tulang rusuk seperti ember
+                                <ul style="margin-left:20px; margin-top:5px;">
+                                    <li>Ada 11 pasang di antara 12 tulang rusuk</li>
+                                    <li>Bekerja seperti tali yang menarik ember ke atas</li>
+                                </ul>
+                            </li>
+                            <li><strong>Otot Aksesori</strong> (saat napas dalam):
+                                <ul style="margin-left:20px; margin-top:5px;">
+                                    <li>Skalenus: Mengangkat 2 tulang rusuk pertama</li>
+                                    <li>Sternokleidomastoid: Mengangkat sternum (tulang dada)</li>
+                                    <li>Pectoralis minor: Mengangkat 3-5 tulang rusuk</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        
+                        <p><strong>B. Otot Ekspirasi (Menghembus Napas)</strong></p>
+                        <ul>
+                            <li><strong>Ekspirasi Biasa</strong>: Proses pasif tanpa otot (hanya relaksasi diafragma)</li>
+                            <li><strong>Ekspirasi Kuat</strong> (batuk, bersin, meniup):
+                                <ul style="margin-left:20px; margin-top:5px;">
+                                    <li>Otot perut (rektus abdominis, obliques): Mendorong diafragma ke atas</li>
+                                    <li>Otot interkostal internal: Menurunkan tulang rusuk</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        
+                        <div class="fact-highlight">
+                            <h4><i class="fas fa-dumbbell"></i> Fakta: Latihan Pernapasan</h4>
+                            <p>Dengan latihan, kita bisa meningkatkan kekuatan otot pernapasan:
+                            <br>• <strong>Penyanyi</strong>: Kapasitas vital paru 20-30% lebih besar
+                            <br>• <strong>Atlet renang</strong>: Bisa menahan napas 4-5 menit
+                            <br>• <strong>Pemain alat musik tiup</strong>: Kontrol napas sangat baik</p>
+                        </div>
+                    </div>
+
+                    <div class="concept-box">
+                        <h3><i class="fas fa-tachometer-alt"></i> Bagian 2: Fisika Pernapasan - Tekanan & Volume</h3>
+                        
+                        <p>Pernapasan diatur oleh <strong>Hukum Fisika Boyle</strong>:
+                        <br><strong>P × V = konstan</strong> (Tekanan × Volume = Tetap)</p>
+                        
+                        <div class="analogy-container">
+                            <h4><i class="fas fa-syringe"></i> Analogi: Suntikan (Syringe)</h4>
+                            <p>Pernapasan bekerja seperti <strong>suntikan</strong>:
+                            <br>• <strong>Tarik piston (inspirasi)</strong>: Volume ↑ → Tekanan ↓ → Udara masuk
+                            <br>• <strong>Dorong piston (ekspirasi)</strong>: Volume ↓ → Tekanan ↑ → Udara keluar
+                            <br>• <strong>Paru-paru</strong> = Tabung suntikan yang elastis
+                            <br>• <strong>Diafragma</strong> = Piston yang bergerak naik-turun</p>
+                        </div>
+                        
+                        <table style="width:100%; border-collapse:collapse; margin:15px 0;">
+                            <thead style="background:#e3f2fd;">
+                                <tr>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Fase</th>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Volume Paru</th>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Tekanan Intra-Alveolar</th>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Tekanan Atmosfer</th>
+                                    <th style="padding:12px; border:2px solid #4a9df8; text-align:center;">Arah Udara</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;"><strong>Inspirasi Awal</strong></td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">↑ Meningkat</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">758 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">760 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center; color:var(--accent-green);"><strong>MASUK</strong></td>
+                                </tr>
+                                <tr style="background:#f5f5f5;">
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;"><strong>Inspirasi Akhir</strong></td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">Maksimal</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">760 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">760 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">BERHENTI</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;"><strong>Ekspirasi Awal</strong></td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">↓ Menurun</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">762 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">760 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center; color:var(--danger-red);"><strong>KELUAR</strong></td>
+                                </tr>
+                                <tr style="background:#f5f5f5;">
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;"><strong>Ekspirasi Akhir</strong></td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">Minimal</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">760 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">760 mmHg</td>
+                                    <td style="padding:10px; border:1px solid #ddd; text-align:center;">BERHENTI</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="concept-box">
+                        <h3><i class="fas fa-brain"></i> Bagian 3: Kontrol Otak - Pusat Kendali Pernapasan</h3>
+                        
+                        <p>Pernapasan dikendalikan oleh <strong>3 pusat di batang otak</strong> yang bekerja seperti komputer:</p>
+                        
+                        <div class="analogy-container">
+                            <h4><i class="fas fa-desktop"></i> Analogi: Sistem Komputer Otomatis</h4>
+                            <p>Pusat pernapasan seperti <strong>komputer canggih</strong>:
+                            <br>• <strong>Sensor Input</strong>: Kemoreseptor (deteksi O₂, CO₂, pH darah)
+                            <br>• <strong>Processor</strong>: Medula & pons (mengolah data sensor)
+                            <br>• <strong>Program</strong>: Pola napas otomatis (12-20 kali/menit)
+                            <br>• <strong>Output</strong>: Sinyal ke otot pernapasan
+                            <br>• <strong>User Control</strong>: Korteks serebri (bisa dikontrol sengaja)</p>
+                        </div>
+                    </div>
+                `,
+                simulation: `
+                    <div class="simulation-box">
+                        <h3><i class="fas fa-cogs"></i> Simulasi Mekanisme Pernapasan</h3>
+                        <p>Perhatikan bagaimana tekanan dan volume berubah selama bernapas:</p>
+                        
+                        <div style="display:flex; justify-content:center; margin:30px 0;">
+                            <div style="width:300px; height:200px; background:#e3f2fd; border-radius:15px; position:relative; overflow:hidden; border:3px solid #4a9df8;">
+                                <div id="diaphragmSim" style="position:absolute; bottom:0; width:100%; height:40%; background:#4a9df8; border-radius:50% 50% 0 0; transition:height 3s;"></div>
+                                <div style="position:absolute; top:20px; left:20px; color:#2c3e50; font-weight:bold;">Rongga Dada</div>
+                                <div id="pressureDisplay" style="position:absolute; top:50px; right:20px; color:#e74c3c; font-weight:bold;">Tekanan: 760 mmHg</div>
+                                <div id="volumeDisplay" style="position:absolute; bottom:60px; left:20px; color:#2ecc71; font-weight:bold;">Volume: 3.0 L</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display:flex; justify-content:center; gap:20px; margin:20px 0;">
+                            <button onclick="startInspiration()" style="padding:12px 24px; background:var(--accent-green); color:white; border:none; border-radius:8px; cursor:pointer;">
+                                <i class="fas fa-arrow-down"></i> Tarik Napas
+                            </button>
+                            <button onclick="startExpiration()" style="padding:12px 24px; background:var(--danger-red); color:white; border:none; border-radius:8px; cursor:pointer;">
+                                <i class="fas fa-arrow-up"></i> Hembus Napas
+                            </button>
+                        </div>
+                        
+                        <p style="margin-top:20px;">
+                            <button id="simulasiSelesaiBtn" style="padding:15px 30px; background:var(--accent-green); color:white; border:none; border-radius:10px; font-size:1.2rem; cursor:pointer;">
+                                <i class="fas fa-check-circle"></i> Pahami Mekanisme Pernapasan
+                            </button>
+                        </p>
+                    </div>
+                `
+            },
+            3: {
+                title: "Level 3: Gangguan & Menjaga Kesehatan Pernapasan",
+                icon: "fas fa-shield-alt",
+                content: `
+                    <div class="concept-box">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Bagian 1: Gangguan Pernapasan Umum</h3>
+                        
+                        <p>Mari kita pelajari <strong>4 gangguan pernapasan utama</strong> yang sering terjadi:</p>
+                        
+                        <div class="warning-box">
+                            <h4><i class="fas fa-compress-alt"></i> 1. ASMA (Penyempitan Saluran Napas)</h4>
+                            <p><strong>Mekanisme</strong>: 3 hal terjadi bersamaan di saluran napas:
+                            <br>1. <strong>Bronkokonstriksi</strong>: Otot polos bronkus mengerut
+                            <br>2. <strong>Inflamasi</strong>: Dinding bronkus bengkak dan merah
+                            <br>3. <strong>Produksi lendir berlebih</strong>: Saluran tersumbat lendir kental</p>
+                            
+                            <p><strong>Pemicu Umum</strong>:
+                            <br>• <strong>Alergen</strong>: Debu, tungau, serbuk sari, bulu hewan
+                            <br>• <strong>Iritan</strong>: Asap rokok, polusi, parfum kuat
+                            <br>• <strong>Fisik</strong>: Olahraga, udara dingin, emosi kuat
+                            <br>• <strong>Infeksi</strong>: Pilek, flu, infeksi saluran napas</p>
+                            
+                            <p><strong>Gejala Khas</strong>:
+                            <br>✓ Sesak napas (seperti ditindih beban berat)
+                            <br>✓ Bunyi "ngik-ngik" (wheezing) saat menghembus napas
+                            <br>✓ Batuk kering (terutama malam/pagi)
+                            <br>✓ Dada terasa sempit dan sesak</p>
+                            
+                            <p><strong>Penanganan</strong>:
+                            <br>• <strong>Inhaler pelega</strong> (biru): Untuk serangan akut
+                            <br>• <strong>Inhaler pengendali</strong> (coklat): Untuk pencegahan harian
+                            <br>• <strong>Hindari pemicu</strong>: Identifikasi dan hindari alergen
+                            <br>• <strong>Action plan</strong>: Rencana darurat bersama dokter</p>
+                        </div>
+                    </div>
+
+                    <div class="concept-box">
+                        <h3><i class="fas fa-smoking-ban"></i> Bagian 2: Bahaya Rokok Bagi Paru-Paru</h3>
+                        
+                        <p>Satu batang rokok mengandung <strong>7.000+ zat kimia</strong>, 70 di antaranya karsinogen (pemicu kanker).</p>
+                        
+                        <div class="analogy-container">
+                            <h4><i class="fas fa-industry"></i> Analogi: Pabrik yang Terkontaminasi</h4>
+                            <p>Paru-paru perokok seperti <strong>pabrik yang terkontaminasi limbah beracun</strong>:
+                            <br>• <strong>Filter rusak</strong>: Silia lumpuh, tidak bisa bersihkan kotoran
+                            <br>• <strong>Pipa tersumbat</strong>: Bronkus menyempit, aliran udara terhambat
+                            <br>• <strong>Mesin rusak</strong>: Alveolus hancur, pertukaran gas tidak efisien
+                            <br>• <strong>Polusi internal</strong>: Zat kimia beracun merusak sel sehat</p>
+                        </div>
+                    </div>
+                `,
+                simulation: `
+                    <div class="simulation-box">
+                        <h3><i class="fas fa-heartbeat"></i> Simulasi Kesehatan Paru-Paru</h3>
+                        <p>Bandingkan kondisi paru-paru sehat vs tidak sehat:</p>
+                        
+                        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:30px; margin:30px 0;">
+                            <div style="background:#d4edda; padding:20px; border-radius:15px; text-align:center;">
+                                <div style="font-size:3rem; margin-bottom:15px;">👍</div>
+                                <h4 style="color:#155724;">Paru-Paru Sehat</h4>
+                                <ul style="text-align:left; margin-top:15px;">
+                                    <li>Warna: Merah muda</li>
+                                    <li>Alveolus: Utuh & elastis</li>
+                                    <li>Fungsi: 90-100%</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background:#f8d7da; padding:20px; border-radius:15px; text-align:center;">
+                                <div style="font-size:3rem; margin-bottom:15px;">👎</div>
+                                <h4 style="color:#721c24;">Paru-Paru Tidak Sehat</h4>
+                                <ul style="text-align:left; margin-top:15px;">
+                                    <li>Warna: Hitam/keabuan</li>
+                                    <li>Alveolus: Rusak & kaku</li>
+                                    <li>Fungsi: 40-60%</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <p style="margin-top:20px;">
+                            <button id="simulasiSelesaiBtn" style="padding:15px 30px; background:var(--accent-green); color:white; border:none; border-radius:10px; font-size:1.2rem; cursor:pointer;">
+                                <i class="fas fa-check-circle"></i> Saya Paham Pentingnya Menjaga Paru-Paru
+                            </button>
+                        </p>
+                    </div>
+                `
+            }
+        };
+
+        // ==================== DATABASE SOAL KUIS ====================
+
+        const quizDatabase = {
+            1: [
+                {
+                    q: "Udara pertama kali masuk ke tubuh melalui...",
+                    options: ["Hidung", "Telinga", "Mata", "Kulit"],
+                    correct: 0,
+                    explanation: "Hidung adalah pintu utama udara masuk karena memiliki rambut dan lendir yang menyaring kotoran."
+                },
+                {
+                    q: "Fungsi rambut hidung adalah...",
+                    options: ["Menyaring debu", "Menghangatkan badan", "Membuat suara", "Mencerna makanan"],
+                    correct: 0,
+                    explanation: "Rambut hidung menyaring partikel besar seperti debu sebelum udara masuk lebih dalam."
+                },
+                {
+                    q: "Pipa udara setelah tenggorokan disebut...",
+                    options: ["Trakea", "Kerongkongan", "Usus", "Pembuluh darah"],
+                    correct: 0,
+                    explanation: "Trakea atau batang tenggorokan adalah pipa yang menghubungkan tenggorokan dengan bronkus."
+                },
+                {
+                    q: "Trakea bercabang menjadi dua yang disebut...",
+                    options: ["Bronkus", "Bronkiolus", "Alveolus", "Diafragma"],
+                    correct: 0,
+                    explanation: "Bronkus adalah cabang trakea yang menuju paru-paru kiri dan kanan."
+                },
+                {
+                    q: "Tempat pertukaran oksigen dan karbon dioksida adalah...",
+                    options: ["Alveolus", "Bronkus", "Tenggorokan", "Hidung"],
+                    correct: 0,
+                    explanation: "Alveolus adalah kantong udara kecil tempat terjadi pertukaran gas."
+                },
+                {
+                    q: "Organ utama pernapasan yang ada di rongga dada adalah...",
+                    options: ["Paru-paru", "Jantung", "Lambung", "Hati"],
+                    correct: 0,
+                    explanation: "Paru-paru adalah organ utama pernapasan tempat pertukaran oksigen dan karbon dioksida."
+                },
+                {
+                    q: "Udara dari bronkus mengalir ke...",
+                    options: ["Bronkiolus", "Alveolus", "Diafragma", "Tulang rusuk"],
+                    correct: 0,
+                    explanation: "Bronkiolus adalah cabang-cabang kecil dari bronkus yang menuju alveolus."
+                },
+                {
+                    q: "Selaput pelindung paru-paru disebut...",
+                    options: ["Pleura", "Perikardium", "Membran", "Kulit ari"],
+                    correct: 0,
+                    explanation: "Pleura adalah selaput tipis yang melindungi paru-paru dan mengurangi gesekan."
+                },
+                {
+                    q: "Jika semua alveolus dibentangkan, luasnya sebesar...",
+                    options: ["Lapangan tenis", "Lapangan sepak bola", "Kamar tidur", "Kelas sekolah"],
+                    correct: 0,
+                    explanation: "Luas total alveolus mencapai 70-100 m², setara dengan lapangan tenis."
+                },
+                {
+                    q: "Saat tersedak, tubuh akan refleks...",
+                    options: ["Batuk", "Bersin", "Menguap", "Semua benar"],
+                    correct: 3,
+                    explanation: "Batuk adalah refleks untuk mengeluarkan benda asing dari saluran pernapasan."
+                }
+            ],
+            2: [
+                {
+                    q: "Otot utama untuk bernapas adalah...",
+                    options: ["Diafragma", "Biseps", "Otot kaki", "Otot tangan"],
+                    correct: 0,
+                    explanation: "Diafragma adalah otot berbentuk kubah di bawah paru-paru yang mengatur pernapasan."
+                },
+                {
+                    q: "Saat menarik napas, diafragma...",
+                    options: ["Turun/mendatar", "Naik/melengkung", "Diam", "Berputar"],
+                    correct: 0,
+                    explanation: "Saat menarik napas, diafragma berkontraksi dan turun sehingga rongga dada membesar."
+                },
+                {
+                    q: "Proses masuknya udara ke paru-paru disebut...",
+                    options: ["Inspirasi", "Ekspirasi", "Respirasi", "Sirkulasi"],
+                    correct: 0,
+                    explanation: "Inspirasi adalah proses menarik napas atau masuknya udara ke paru-paru."
+                },
+                {
+                    q: "Saat menghembus napas, tekanan udara dalam paru-paru...",
+                    options: ["Meningkat", "Menurun", "Tetap", "Tidak tentu"],
+                    correct: 0,
+                    explanation: "Saat menghembus napas, rongga dada mengecil sehingga tekanan udara meningkat."
+                },
+                {
+                    q: "Frekuensi napas normal anak-anak adalah...",
+                    options: ["20-30 kali/menit", "5-10 kali/menit", "40-50 kali/menit", "60-70 kali/menit"],
+                    correct: 0,
+                    explanation: "Anak-anak bernapas lebih cepat daripada orang dewasa karena kebutuhan oksigen lebih tinggi."
+                },
+                {
+                    q: "Pernapasan yang menggunakan otot diafragma disebut pernapasan...",
+                    options: ["Perut", "Dada", "Samping", "Cepat"],
+                    correct: 0,
+                    explanation: "Pernapasan perut/diafragma lebih dalam dan efisien daripada pernapasan dada."
+                },
+                {
+                    q: "Saat berlari, frekuensi napas akan...",
+                    options: ["Meningkat", "Menurun", "Tetap", "Berhenti"],
+                    correct: 0,
+                    explanation: "Saat beraktivitas, tubuh butuh lebih banyak oksigen sehingga frekuensi napas meningkat."
+                },
+                {
+                    q: "Kapasitas vital paru-paru adalah...",
+                    options: ["Volume udara maksimal yang bisa dihembuskan", "Volume udara biasa", "Volume udara sisa", "Volume udara di alveolus"],
+                    correct: 0,
+                    explanation: "Kapasitas vital adalah jumlah udara maksimal yang bisa dihembuskan setelah menarik napas dalam-dalam."
+                },
+                {
+                    q: "Dalam sehari, kita bernapas sekitar...",
+                    options: ["20.000-25.000 kali", "5.000-10.000 kali", "50.000-60.000 kali", "100.000 kali"],
+                    correct: 0,
+                    explanation: "Rata-rata manusia bernapas 20.000-25.000 kali sehari tergantung aktivitas."
+                },
+                {
+                    q: "Saat tidur, kita biasanya menggunakan pernapasan...",
+                    options: ["Diafragma/perut", "Dada", "Cepat", "Dalam"],
+                    correct: 0,
+                    explanation: "Saat tidur, pernapasan lebih dalam dan menggunakan diafragma untuk efisiensi."
+                }
+            ],
+            3: [
+                {
+                    q: "Penyakit penyempitan saluran napas karena alergi disebut...",
+                    options: ["Asma", "Diabetes", "Hipertensi", "Anemia"],
+                    correct: 0,
+                    explanation: "Asma adalah penyakit penyempitan saluran napas akibat reaksi alergi atau iritasi."
+                },
+                {
+                    q: "Radang pada bronkus disebut...",
+                    options: ["Bronkitis", "Pneumonia", "Asma", "Influenza"],
+                    correct: 0,
+                    explanation: "Bronkitis adalah peradangan pada bronkus yang menyebabkan batuk berdahak."
+                },
+                {
+                    q: "Infeksi yang menyebabkan alveolus berisi cairan adalah...",
+                    options: ["Pneumonia", "TBC", "Bronkitis", "Asma"],
+                    correct: 0,
+                    explanation: "Pneumonia adalah infeksi paru-paru yang membuat alveolus terisi cairan."
+                },
+                {
+                    q: "Zat dalam rokok yang menyebabkan ketagihan adalah...",
+                    options: ["Nikotin", "Tar", "Karbon monoksida", "Formalin"],
+                    correct: 0,
+                    explanation: "Nikotin adalah zat adiktif dalam rokok yang mempengaruhi otak dan menyebabkan kecanduan."
+                },
+                {
+                    q: "Cara efektif mencegah ISPA adalah...",
+                    options: ["Cuci tangan", "Minum es", "Tidur larut", "Makan pedas"],
+                    correct: 0,
+                    explanation: "Mencuci tangan dengan sabun menghilangkan kuman penyebab Infeksi Saluran Pernapasan Akut (ISPA)."
+                },
+                {
+                    q: "Vitamin yang penting untuk kesehatan paru-paru adalah...",
+                    options: ["Vitamin C", "Vitamin D", "Vitamin B12", "Vitamin K"],
+                    correct: 0,
+                    explanation: "Vitamin C memperkuat sistem kekebalan tubuh dan melindungi paru-paru dari infeksi."
+                },
+                {
+                    q: "Paru-paru kanan memiliki ... gelambir (lobus)",
+                    options: ["3", "2", "1", "4"],
+                    correct: 0,
+                    explanation: "Paru-paru kanan memiliki 3 gelambir, sedangkan kiri 2 gelambir karena memberi tempat untuk jantung."
+                },
+                {
+                    q: "Asap rokok bisa membuat warna paru-paru menjadi...",
+                    options: ["Hitam", "Putih", "Biru", "Hijau"],
+                    correct: 0,
+                    explanation: "Tar dalam rokok menumpuk di paru-paru dan membuatnya berwarna hitam."
+                },
+                {
+                    q: "Imunisasi yang mencegah TBC adalah...",
+                    options: ["BCG", "Polio", "Campak", "Hepatitis"],
+                    correct: 0,
+                    explanation: "Vaksin BCG diberikan untuk mencegah tuberkulosis (TBC), penyakit paru-paru serius."
+                },
+                {
+                    q: "Saat teman sesak napas, hal pertama yang harus dilakukan adalah...",
+                    options: ["Tenangkan dia", "Berikan obat", "Pijat punggung", "Tidurkan"],
+                    correct: 0,
+                    explanation: "Menenangkan penderita sesak napas membantu mengurangi panik yang memperburuk kondisi."
+                }
+            ]
+        };
+
+        // ==================== DATABASE SOAL LATIHAN ====================
+
+        const practiceDatabase = {
+            1: [
+                {
+                    q: "Organ pernapasan yang pertama kali dilalui udara adalah...",
+                    options: ["Hidung", "Mulut", "Telinga", "Mata"],
+                    correct: 0,
+                    explanation: "Hidung adalah organ pertama yang dilalui udara karena memiliki sistem penyaringan yang baik."
+                },
+                {
+                    q: "Di dalam hidung, debu disaring oleh...",
+                    options: ["Rambut hidung", "Lendir", "Pembuluh darah", "Semua benar"],
+                    correct: 3,
+                    explanation: "Rambut hidung menyaring partikel besar, lendir menjebak partikel kecil, dan pembuluh darah menghangatkan udara."
+                },
+                {
+                    q: "Nama lain tenggorokan pernapasan adalah...",
+                    options: ["Trakea", "Esofagus", "Faring", "Laring"],
+                    correct: 0,
+                    explanation: "Trakea adalah nama lain dari batang tenggorokan, pipa udara yang menghubungkan laring ke bronkus."
+                },
+                {
+                    q: "Cabang dari trakea menuju paru-paru disebut...",
+                    options: ["Bronkus", "Bronkiolus", "Alveolus", "Diafragma"],
+                    correct: 0,
+                    explanation: "Bronkus adalah cabang trakea yang menuju masing-masing paru-paru."
+                },
+                {
+                    q: "Struktur seperti anggur di ujung bronkiolus adalah...",
+                    options: ["Alveolus", "Bronkus", "Trakea", "Pleura"],
+                    correct: 0,
+                    explanation: "Alveolus berbentuk seperti buah anggur, merupakan kantong udara tempat pertukaran gas."
+                },
+                {
+                    q: "Paru-paru dilindungi oleh tulang...",
+                    options: ["Rusuk", "Paha", "Kering", "Lengan"],
+                    correct: 0,
+                    explanation: "Tulang rusuk membentuk sangkar pelindung untuk paru-paru dan jantung."
+                },
+                {
+                    q: "Pertukaran oksigen terjadi di...",
+                    options: ["Alveolus", "Bronkus", "Trakea", "Hidung"],
+                    correct: 0,
+                    explanation: "Alveolus adalah tempat pertukaran oksigen dari udara ke darah dan karbon dioksida dari darah ke udara."
+                },
+                {
+                    q: "Jumlah alveolus dalam satu paru-paru sekitar...",
+                    options: ["300-400 juta", "30-40 juta", "3-4 juta", "3-4 ribu"],
+                    correct: 0,
+                    explanation: "Setiap paru-paru memiliki 300-400 juta alveolus untuk permukaan pertukaran gas yang luas."
+                },
+                {
+                    q: "Luas alveolus jika dibentangkan sebesar...",
+                    options: ["Lapangan tenis", "Lapangan basket", "Kolam renang", "Gedung sekolah"],
+                    correct: 0,
+                    explanation: "Luas total permukaan alveolus sekitar 70-100 m², setara dengan lapangan tenis."
+                },
+                {
+                    q: "Selaput pelumas paru-paru disebut...",
+                    options: ["Pleura", "Perikardium", "Peritoneum", "Meninges"],
+                    correct: 0,
+                    explanation: "Pleura menghasilkan cairan pelumas untuk mengurangi gesekan saat paru-paru mengembang dan mengempis."
+                }
+            ],
+            2: [
+                {
+                    q: "Otot berbentuk kubah di bawah paru-paru adalah...",
+                    options: ["Diafragma", "Interkostalis", "Otot perut", "Otot punggung"],
+                    correct: 0,
+                    explanation: "Diafragma adalah otot utama pernapasan berbentuk kubah yang memisahkan rongga dada dan perut."
+                },
+                {
+                    q: "Hukum yang menjelaskan hubungan tekanan-volume paru adalah...",
+                    options: ["Hukum Boyle", "Hukum Pascal", "Hukum Archimedes", "Hukum Newton"],
+                    correct: 0,
+                    explanation: "Hukum Boyle menyatakan bahwa tekanan berbanding terbalik dengan volume pada suhu konstan."
+                },
+                {
+                    q: "Volume udara napas normal (500 ml) disebut...",
+                    options: ["Volume tidal", "Volume cadangan", "Volume residu", "Kapasitas vital"],
+                    correct: 0,
+                    explanation: "Volume tidal adalah jumlah udara yang dihirup dan dihembuskan dalam satu kali napas normal."
+                },
+                {
+                    q: "Pusat pernapasan yang mengatur ritme ada di...",
+                    options: ["Medula oblongata", "Otak besar", "Otak kecil", "Sumsum tulang belakang"],
+                    correct: 0,
+                    explanation: "Medula oblongata di batang otak mengatur ritme pernapasan otomatis."
+                },
+                {
+                    q: "Reseptor yang mendeteksi kadar CO₂ darah ada di...",
+                    options: ["Medula", "Jantung", "Paru-paru", "Hati"],
+                    correct: 0,
+                    explanation: "Kemoreseptor di medula oblongata sensitif terhadap peningkatan CO₂ dalam darah."
+                },
+                {
+                    q: "Saat olahraga, frekuensi napas meningkat karena...",
+                    options: ["Kebutuhan O₂ meningkat", "Kelelahan otot", "Peningkatan suhu", "Semua benar"],
+                    correct: 3,
+                    explanation: "Semua faktor tersebut berkontribusi pada peningkatan frekuensi napas saat berolahraga."
+                },
+                {
+                    q: "Volume udara maksimal setelah inspirasi maksimal disebut...",
+                    options: ["Kapasitas vital", "Volume tidal", "Volume residu", "Kapasitas total"],
+                    correct: 0,
+                    explanation: "Kapasitas vital adalah jumlah maksimal udara yang bisa dikeluarkan setelah menarik napas dalam-dalam."
+                },
+                {
+                    q: "Adaptasi tubuh di dataran tinggi adalah...",
+                    options: ["Produksi sel darah merah meningkat", "Jantung berdetak lambat", "Volume paru mengecil", "Tekanan darah turun"],
+                    correct: 0,
+                    explanation: "Tubuh memproduksi lebih banyak sel darah merah untuk mengangkut oksigen lebih efisien di udara tipis."
+                },
+                {
+                    q: "Refleks mencegah paru terlalu mengembang adalah...",
+                    options: ["Refleks Hering-Breuer", "Refleks batuk", "Refleks bersin", "Refleks menguap"],
+                    correct: 0,
+                    explanation: "Refleks Hering-Breuer menghentikan inspirasi ketika paru-paru sudah cukup mengembang."
+                },
+                {
+                    q: "Saat inspirasi, tekanan intra-alveolar...",
+                    options: ["Turun di bawah atmosfer", "Naik di atas atmosfer", "Tetap sama", "Tidak terukur"],
+                    correct: 0,
+                    explanation: "Saat inspirasi, rongga dada membesar sehingga tekanan dalam paru-paru turun di bawah tekanan atmosfer."
+                }
+            ],
+            3: [
+                {
+                    q: "Penyakit penyempitan saluran napas karena alergi adalah...",
+                    options: ["Asma", "Bronkitis", "Pneumonia", "Tuberkulosis"],
+                    correct: 0,
+                    explanation: "Asma menyebabkan penyempitan saluran napas akibat reaksi alergi terhadap pemicu seperti debu atau serbuk sari."
+                },
+                {
+                    q: "Komponen PPOK dengan batuk berdahak kronis adalah...",
+                    options: ["Bronkitis kronis", "Emfisema", "Asma", "Fibrosis"],
+                    correct: 0,
+                    explanation: "Bronkitis kronis ditandai dengan batuk berdahak yang berlangsung minimal 3 bulan dalam setahun."
+                },
+                {
+                    q: "Zat hitam lengket dalam rokok adalah...",
+                    options: ["Tar", "Nikotin", "CO", "Formalin"],
+                    correct: 0,
+                    explanation: "Tar adalah residu hitam lengket yang menumpuk di paru-paru perokok."
+                },
+                {
+                    q: "Alat mengukur fungsi paru adalah...",
+                    options: ["Spirometer", "Stetoskop", "Termometer", "Tensimeter"],
+                    correct: 0,
+                    explanation: "Spirometer mengukur volume dan kapasitas paru-paru untuk menilai fungsi pernapasan."
+                },
+                {
+                    q: "Vaksin pneumonia untuk anak adalah...",
+                    options: ["PCV", "BCG", "DPT", "Campak"],
+                    correct: 0,
+                    explanation: "PCV (Pneumococcal Conjugate Vaccine) melindungi dari bakteri penyebab pneumonia."
+                },
+                {
+                    q: "Teknik pernapasan bibir seperti bersiul disebut...",
+                    options: ["Pursed-lip breathing", "Diaphragmatic", "Segmental", "Costal"],
+                    correct: 0,
+                    explanation: "Pursed-lip breathing membantu mengeluarkan udara lebih perlahan dan menjaga saluran napas tetap terbuka."
+                },
+                {
+                    q: "Alat mengukur saturasi oksigen di jari adalah...",
+                    options: ["Pulse oximeter", "Spirometer", "ECG", "USG"],
+                    correct: 0,
+                    explanation: "Pulse oximeter mengukur persentase oksigen dalam darah melalui sensor di jari."
+                },
+                {
+                    q: "Setelah berhenti merokok 1 tahun, risiko jantung turun...",
+                    options: ["50%", "10%", "90%", "25%"],
+                    correct: 0,
+                    explanation: "Dalam satu tahun setelah berhenti merokok, risiko penyakit jantung koroner turun setengahnya."
+                },
+                {
+                    q: "Kanker paru paling sering berasal dari...",
+                    options: ["Sel epitel bronkus", "Sel alveolus", "Sel darah", "Sel otot"],
+                    correct: 0,
+                    explanation: "Kanker paru paling sering dimulai dari sel-sel yang melapisi bronkus (saluran udara)."
+                },
+                {
+                    q: "Pencegahan utama penyakit paru adalah...",
+                    options: ["Tidak merokok", "Minum vitamin", "Tidur cukup", "Makan teratur"],
+                    correct: 0,
+                    explanation: "Tidak merokok adalah cara terpenting mencegah penyakit paru-paru seperti kanker dan PPOK."
+                }
+            ]
+        };
+
+        // ==================== FUNGSI APLIKASI ====================
+
+        // Load data dari localStorage
+        function loadAppData() {
+            const saved = localStorage.getItem('petualanganOksigenData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                appState.unlockedLevel = data.unlockedLevel || 1;
+                appState.scores = data.scores || {1: 0, 2: 0, 3: 0};
+                appState.practiceScores = data.practiceScores || {1: 0, 2: 0, 3: 0};
+            }
+            // Update progress indicator
+            document.getElementById('currentProgress').textContent = appState.unlockedLevel;
+        }
+
+        // Save data ke localStorage
+        function saveAppData() {
+            localStorage.setItem('petualanganOksigenData', JSON.stringify({
+                unlockedLevel: appState.unlockedLevel,
+                scores: appState.scores,
+                practiceScores: appState.practiceScores
+            }));
+            // Update progress indicator
+            document.getElementById('currentProgress').textContent = appState.unlockedLevel;
+        }
+
+        // Render level cards - DIPERBAIKI: Hanya level yang unlocked yang bisa diklik
+        function renderLevelCards() {
+            const container = document.getElementById('levelContainer');
+            container.innerHTML = '';
+            
+            for (let level = 1; level <= CONFIG.totalLevels; level++) {
+                const isUnlocked = level <= appState.unlockedLevel;
+                const materi = materiDatabase[level];
+                const score = appState.scores[level] || 0;
+                
+                const card = document.createElement('div');
+                card.className = `level-card ${isUnlocked ? '' : 'locked'}`;
+                card.innerHTML = `
+                    <i class="${materi.icon} level-icon" style="color: ${isUnlocked ? '#4a9df8' : '#95a5a6'}"></i>
+                    <h3>Level ${level}</h3>
+                    <p>${materi.title.split(':')[1].trim()}</p>
+                    <div style="margin-top: 15px; font-size: 0.9rem; color: ${isUnlocked ? '#2c3e50' : '#7f8c8d'}">
+                        Skor Tertinggi: ${score}/100
+                    </div>
+                    ${!isUnlocked ? '<i class="fas fa-lock lock-icon"></i>' : ''}
+                `;
+                
+                if (isUnlocked) {
+                    card.addEventListener('click', () => selectLevel(level));
+                } else {
+                    card.addEventListener('click', () => {
+                        alert(`Level ${level} masih terkunci! Selesaikan Level ${level-1} dengan skor minimal ${CONFIG.minPassingScore} untuk membuka level ini.`);
+                    });
+                }
+                
+                container.appendChild(card);
+            }
+        }
+
+        // Pilih level - DIPERBAIKI: Cek apakah level sudah unlocked
+        function selectLevel(level) {
+            // Cek apakah level sudah unlocked
+            if (level > appState.unlockedLevel) {
+                alert(`Level ${level} masih terkunci! Selesaikan Level ${level-1} terlebih dahulu.`);
+                return;
+            }
+            
+            appState.currentLevel = level;
+            appState.isQuizActive = false;
+            appState.hasSeenSimulation = false;
+            
+            document.getElementById('mainContent').classList.add('active');
+            document.getElementById('levelContainer').style.opacity = '0.6';
+            
+            // Tampilkan tombol kembali (untuk materi, simulasi, latihan)
+            document.getElementById('backButton').classList.remove('hidden');
+            
+            // UNLOCK level section saat tidak di kuis
+            document.getElementById('levelSection').classList.remove('locked');
+            
+            document.getElementById('currentLevelDisplay').textContent = level;
+            document.getElementById('latihanLevelDisplay').textContent = level;
+            
+            loadMateri(level);
+            loadSimulation(level);
+            resetQuiz();
+            resetPractice();
+            
+            switchTab('materi');
+            updateTabAccess(false);
+            
+            document.getElementById('mainContent').scrollIntoView({behavior: 'smooth'});
+        }
+
+        // Load materi
+        function loadMateri(level) {
+            const contentDiv = document.getElementById('materiContent');
+            const materi = materiDatabase[level];
+            
+            contentDiv.innerHTML = `
+                <h2>${materi.title}</h2>
+                <div class="materi-content">
+                    ${materi.content}
+                    <div class="fact-highlight">
+                        <h4><i class="fas fa-graduation-cap"></i> Persiapan Penilaian</h4>
+                        <p>Setelah memahami materi ini, kamu akan menghadapi:
+                        <br><strong>Kuis Penilaian</strong>: 10 soal acak dengan opsi yang diacak
+                        <br><strong>Syarat kelulusan</strong>: Skor ≥${CONFIG.minPassingScore}/100
+                        <br><strong>Mode latihan</strong>: Soal serupa untuk persiapan</p>
+                        <p style="margin-top:10px;">Skormu saat ini di level ini: <strong>${appState.scores[level] || 0}/100</strong></p>
+                        ${level < appState.unlockedLevel ? 
+                            `<p style="color:var(--accent-green); margin-top:10px;"><i class="fas fa-check-circle"></i> Level ini sudah terbuka! Kamu bisa mengulang kuis untuk meningkatkan skor.</p>` : 
+                            ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load simulasi
+        function loadSimulation(level) {
+            const simulasiDiv = document.getElementById('simulasiContent');
+            const materi = materiDatabase[level];
+            
+            simulasiDiv.innerHTML = materi.simulation;
+            
+            setTimeout(() => {
+                const selesaiBtn = document.getElementById('simulasiSelesaiBtn');
+                if (selesaiBtn) {
+                    selesaiBtn.addEventListener('click', () => {
+                        appState.hasSeenSimulation = true;
+                        document.getElementById('decisionBox').style.display = 'block';
+                        selesaiBtn.style.display = 'none';
+                        document.getElementById('decisionBox').scrollIntoView({behavior: 'smooth'});
+                    });
+                }
+            }, 100);
+        }
+
+        // Fungsi simulasi untuk Level 2
+        function startInspiration() {
+            const diaphragm = document.getElementById('diaphragmSim');
+            const pressure = document.getElementById('pressureDisplay');
+            const volume = document.getElementById('volumeDisplay');
+            
+            diaphragm.style.height = '20%';
+            pressure.textContent = 'Tekanan: 758 mmHg';
+            volume.textContent = 'Volume: 4.5 L';
+        }
+
+        function startExpiration() {
+            const diaphragm = document.getElementById('diaphragmSim');
+            const pressure = document.getElementById('pressureDisplay');
+            const volume = document.getElementById('volumeDisplay');
+            
+            diaphragm.style.height = '40%';
+            pressure.textContent = 'Tekanan: 762 mmHg';
+            volume.textContent = 'Volume: 3.0 L';
+        }
+
+        // Fungsi untuk menutup overlay
+        function closeOverlay() {
+            document.getElementById('quizOverlay').classList.remove('active');
+        }
+
+        // Switch tab
+        function switchTab(tabName) {
+            appState.currentTab = tabName;
+            
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+            });
+            
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === tabName + 'Panel');
+            });
+            
+            if (tabName === 'kuis') {
+                loadQuizContent();
+            } else if (tabName === 'latihan') {
+                loadPracticeContent();
+            }
+        }
+
+        // Update tab access - DIPERBAIKI: KUIS MENGUNCI LEVEL SECTION
+        function updateTabAccess(isQuizActive) {
+            const tabs = {
+                materi: document.getElementById('tabMateri'),
+                simulasi: document.getElementById('tabSimulasi'),
+                kuis: document.getElementById('tabKuis'),
+                latihan: document.getElementById('tabLatihan')
+            };
+            
+            if (isQuizActive) {
+                // Kuis aktif: nonaktifkan semua tab kecuali kuis
+                tabs.materi.disabled = true;
+                tabs.simulasi.disabled = true;
+                tabs.latihan.disabled = true;
+                tabs.kuis.disabled = false;
+                
+                // Tampilkan pesan lock
+                document.getElementById('quizLockNotice').style.display = 'block';
+                
+                // SEMBUNYIKAN TOMBOL KEMBALI SELAMA KUIS
+                document.getElementById('backButton').classList.add('hidden');
+                
+                // LOCK LEVEL SECTION SELAMA KUIS
+                document.getElementById('levelSection').classList.add('locked');
+                
+            } else {
+                // Normal: semua tab bisa diakses
+                tabs.materi.disabled = false;
+                tabs.simulasi.disabled = false;
+                tabs.latihan.disabled = false;
+                tabs.kuis.disabled = false;
+                
+                // Sembunyikan pesan lock
+                document.getElementById('quizLockNotice').style.display = 'none';
+                
+                // Tampilkan tombol kembali (kecuali di kuis)
+                if (appState.currentTab !== 'kuis') {
+                    document.getElementById('backButton').classList.remove('hidden');
+                }
+                
+                // UNLOCK LEVEL SECTION saat tidak di kuis
+                document.getElementById('levelSection').classList.remove('locked');
+                
+                // Jika belum lihat simulasi, sembunyikan decision box
+                if (!appState.hasSeenSimulation) {
+                    document.getElementById('decisionBox').style.display = 'none';
+                }
+            }
+        }
+
+        // Load kuis content dengan pengacakan
+        function loadQuizContent() {
+            const level = appState.currentLevel;
+            const questions = quizDatabase[level];
+            
+            // Acak urutan soal
+            quizState.shuffledQuestions = shuffleArray([...questions]);
+            
+            // Acak urutan opsi untuk setiap soal
+            quizState.shuffledQuestions = quizState.shuffledQuestions.map(q => shuffleQuestion(q));
+            
+            quizState.currentIndex = 0;
+            quizState.score = 0;
+            quizState.selectedAnswer = null;
+            quizState.userAnswers = [];
+            
+            displayQuizQuestion();
+            appState.isQuizActive = true;
+            updateTabAccess(true);
+        }
+
+        // Tampilkan soal kuis
+        function displayQuizQuestion() {
+            const quizDiv = document.getElementById('quizContent');
+            const state = quizState;
+            const question = state.shuffledQuestions[state.currentIndex];
+            
+            if (!question) return;
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            quizDiv.innerHTML = `
+                <div class="score-display">Soal ${state.currentIndex + 1} dari ${CONFIG.questionsPerLevel} | Skor: ${state.score}</div>
+                <div class="question-container">
+                    <div class="question-number">Soal #${state.currentIndex + 1} - Level ${appState.currentLevel}</div>
+                    <div class="question-text">${question.q}</div>
+                    <div class="options-grid" id="quizOptions">
+                        ${question.options.map((opt, idx) => `
+                            <div class="option" data-index="${idx}">
+                                <div class="option-letter">${letters[idx]}</div>
+                                ${opt}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="quiz-controls">
+                    <button class="quiz-button submit-btn" id="submitQuizBtn" disabled>
+                        <i class="fas fa-paper-plane"></i> Kirim Jawaban
+                    </button>
+                </div>
+                <div id="quizResultMessage"></div>
+            `;
+            
+            // Event listeners untuk opsi
+            document.querySelectorAll('#quizOptions .option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('#quizOptions .option').forEach(o => {
+                        o.classList.remove('selected');
+                        o.querySelector('.option-letter').style.background = '#e9ecef';
+                    });
+                    
+                    this.classList.add('selected');
+                    this.querySelector('.option-letter').style.background = 'var(--accent-green)';
+                    state.selectedAnswer = parseInt(this.getAttribute('data-index'));
+                    document.getElementById('submitQuizBtn').disabled = false;
+                });
+            });
+            
+            document.getElementById('submitQuizBtn').addEventListener('click', submitQuizAnswer);
+        }
+
+        // Submit jawaban kuis dengan PENJELASAN
+        function submitQuizAnswer() {
+            const state = quizState;
+            const question = state.shuffledQuestions[state.currentIndex];
+            const isCorrect = state.selectedAnswer === question.correct;
+            
+            if (isCorrect) {
+                state.score += CONFIG.pointsPerQuestion;
+            }
+            
+            state.userAnswers.push({
+                questionIndex: state.currentIndex,
+                selected: state.selectedAnswer,
+                correct: question.correct,
+                isCorrect: isCorrect
+            });
+            
+            // Tampilkan feedback
+            const letters = ['A', 'B', 'C', 'D'];
+            const options = document.querySelectorAll('#quizOptions .option');
+            options.forEach((opt, idx) => {
+                if (idx === question.correct) {
+                    opt.classList.add('correct');
+                    opt.querySelector('.option-letter').style.background = 'var(--accent-green)';
+                    opt.querySelector('.option-letter').innerHTML = '<i class="fas fa-check"></i>';
+                } else if (idx === state.selectedAnswer && !isCorrect) {
+                    opt.classList.add('incorrect');
+                    opt.querySelector('.option-letter').style.background = 'var(--danger-red)';
+                    opt.querySelector('.option-letter').innerHTML = '<i class="fas fa-times"></i>';
+                }
+            });
+            
+            // Tampilkan penjelasan dan hasil
+            const resultMsg = document.getElementById('quizResultMessage');
+            resultMsg.innerHTML = `
+                <div class="${isCorrect ? 'result-success' : 'result-fail'}" style="margin-bottom: 20px;">
+                    ${isCorrect ? 
+                        `<i class="fas fa-check-circle"></i> Benar! +${CONFIG.pointsPerQuestion} poin.` : 
+                        `<i class="fas fa-times-circle"></i> Masih kurang tepat.`}
+                </div>
+                <div class="explanation-box">
+                    <h4><i class="fas fa-lightbulb"></i> Penjelasan Jawaban:</h4>
+                    <p>${question.explanation}</p>
+                </div>
+            `;
+            
+            // Update tombol
+            document.getElementById('submitQuizBtn').style.display = 'none';
+            
+            const controlsDiv = document.querySelector('.quiz-controls');
+            controlsDiv.innerHTML = `
+                <button class="quiz-button next-btn" id="nextQuizBtn">
+                    <i class="fas fa-forward"></i> ${state.currentIndex < CONFIG.questionsPerLevel - 1 ? 'Soal Berikutnya' : 'Lihat Hasil'}
+                </button>
+            `;
+            
+            document.getElementById('nextQuizBtn').addEventListener('click', nextQuizQuestion);
+        }
+
+        // Next question kuis
+        function nextQuizQuestion() {
+            quizState.currentIndex++;
+            quizState.selectedAnswer = null;
+            
+            if (quizState.currentIndex < CONFIG.questionsPerLevel) {
+                displayQuizQuestion();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        // Tampilkan hasil kuis
+        function showQuizResults() {
+            const quizDiv = document.getElementById('quizContent');
+            const state = quizState;
+            const level = appState.currentLevel;
+            const passed = state.score >= CONFIG.minPassingScore;
+            
+            appState.scores[level] = Math.max(appState.scores[level] || 0, state.score);
+            
+            if (passed && level < CONFIG.totalLevels) {
+                appState.unlockedLevel = Math.max(appState.unlockedLevel, level + 1);
+            }
+            
+            saveAppData();
+            
+            // Analisis performa
+            const correctCount = state.userAnswers.filter(a => a.isCorrect).length;
+            const wrongCount = CONFIG.questionsPerLevel - correctCount;
+            
+            quizDiv.innerHTML = `
+                <div style="text-align:center; padding:40px 20px;">
+                    <div style="font-size:4rem; color:${passed ? '#2ecc71' : '#e74c3c'}; margin-bottom:20px;">
+                        ${passed ? '🏆' : '📚'}
+                    </div>
+                    <h2 style="color:${passed ? '#2ecc71' : '#e74c3c'};">
+                        ${passed ? 'SELAMAT! KAMU LULUS!' : 'AYO BELAJAR LAGI!'}
+                    </h2>
+                    
+                    <div style="display:flex; justify-content:center; gap:20px; margin:25px 0; flex-wrap:wrap;">
+                        <div style="background:#d4edda; padding:20px; border-radius:15px; min-width:200px;">
+                            <div style="font-size:2.5rem; font-weight:bold; color:#155724;">${state.score}/100</div>
+                            <div>Skor Akhir</div>
+                        </div>
+                        <div style="background:#cce5ff; padding:20px; border-radius:15px; min-width:200px;">
+                            <div style="font-size:2.5rem; font-weight:bold; color:#004085;">${correctCount}</div>
+                            <div>Jawaban Benar</div>
+                        </div>
+                        <div style="background:#f8d7da; padding:20px; border-radius:15px; min-width:200px;">
+                            <div style="font-size:2.5rem; font-weight:bold; color:#721c24;">${wrongCount}</div>
+                            <div>Jawaban Salah</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background:${passed ? '#d4edda' : '#f8d7da'}; padding:25px; border-radius:15px; margin:25px 0; text-align:left;">
+                        <h4 style="color:${passed ? '#155724' : '#721c24'};">${passed ? '🎉 Pencapaian:' : '💡 Saran Perbaikan:'}</h4>
+                        <p>
+                            ${passed ? 
+                                (level < CONFIG.totalLevels ? 
+                                    `Level ${level + 1} sekarang terbuka! Lanjutkan petualanganmu!` : 
+                                    'Kamu telah menyelesaikan semua level! Selamat!') : 
+                                `Kamu butuh minimal ${CONFIG.minPassingScore} poin. Gunakan mode latihan untuk persiapan lebih baik.`}
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top:30px;">
+                        ${!passed ? `
+                            <button class="quiz-button" onclick="retryQuiz()" style="background:var(--accent-orange); margin:10px;">
+                                <i class="fas fa-redo"></i> Coba Kuis Lagi
+                            </button>
+                        ` : ''}
+                        
+                        <button class="quiz-button" onclick="finishQuiz()" style="background:var(--primary-blue); margin:10px;">
+                            <i class="fas fa-home"></i> Kembali ke Materi
+                        </button>
+                        
+                        ${passed && level < CONFIG.totalLevels ? `
+                            <button class="quiz-button" onclick="goToNextLevel()" style="background:var(--accent-green); margin:10px;">
+                                <i class="fas fa-arrow-right"></i> Lanjut ke Level ${level + 1}
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Unlock tab lain dan TAMPILKAN KEMBALI TOMBOL KEMBALI
+            appState.isQuizActive = false;
+            updateTabAccess(false);
+            document.getElementById('backButton').classList.remove('hidden');
+            // Refresh level cards untuk menampilkan status unlock baru
+            renderLevelCards();
+        }
+
+        // Load practice content
+        function loadPracticeContent() {
+            const level = appState.currentLevel;
+            const questions = practiceDatabase[level];
+            
+            // Acak urutan soal
+            practiceState.shuffledQuestions = shuffleArray([...questions]);
+            
+            // Acak urutan opsi
+            practiceState.shuffledQuestions = practiceState.shuffledQuestions.map(q => shuffleQuestion(q));
+            
+            practiceState.currentIndex = 0;
+            practiceState.score = 0;
+            practiceState.selectedAnswer = null;
+            
+            displayPracticeQuestion();
+        }
+
+        // Tampilkan soal latihan
+        function displayPracticeQuestion() {
+            const latihanDiv = document.getElementById('latihanContent');
+            const state = practiceState;
+            const question = state.shuffledQuestions[state.currentIndex];
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            latihanDiv.innerHTML = `
+                <div class="score-display">Latihan ${state.currentIndex + 1} dari ${CONFIG.questionsPerLevel} | Skor: ${state.score}</div>
+                <div class="practice-container">
+                    <div class="question-number">Latihan #${state.currentIndex + 1}</div>
+                    <div class="question-text">${question.q}</div>
+                    <div class="options-grid" id="practiceOptions">
+                        ${question.options.map((opt, idx) => `
+                            <div class="option" data-index="${idx}">
+                                <div class="option-letter">${letters[idx]}</div>
+                                ${opt}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="quiz-controls">
+                    <button class="quiz-button submit-btn" id="submitPracticeBtn" disabled>
+                        <i class="fas fa-check-circle"></i> Cek Jawaban
+                    </button>
+                </div>
+                <div id="practiceResultMessage"></div>
+            `;
+            
+            // Event listeners
+            document.querySelectorAll('#practiceOptions .option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('#practiceOptions .option').forEach(o => {
+                        o.classList.remove('selected');
+                        o.querySelector('.option-letter').style.background = '#e9ecef';
+                    });
+                    
+                    this.classList.add('selected');
+                    this.querySelector('.option-letter').style.background = 'var(--accent-orange)';
+                    state.selectedAnswer = parseInt(this.getAttribute('data-index'));
+                    document.getElementById('submitPracticeBtn').disabled = false;
+                });
+            });
+            
+            document.getElementById('submitPracticeBtn').addEventListener('click', submitPracticeAnswer);
+        }
+
+        // Submit jawaban latihan dengan PENJELASAN
+        function submitPracticeAnswer() {
+            const state = practiceState;
+            const question = state.shuffledQuestions[state.currentIndex];
+            const isCorrect = state.selectedAnswer === question.correct;
+            
+            if (isCorrect) {
+                state.score += CONFIG.pointsPerQuestion;
+            }
+            
+            // Tampilkan feedback
+            const letters = ['A', 'B', 'C', 'D'];
+            const options = document.querySelectorAll('#practiceOptions .option');
+            options.forEach((opt, idx) => {
+                if (idx === question.correct) {
+                    opt.classList.add('correct');
+                    opt.querySelector('.option-letter').style.background = 'var(--accent-green)';
+                    opt.querySelector('.option-letter').innerHTML = '<i class="fas fa-check"></i>';
+                } else if (idx === state.selectedAnswer && !isCorrect) {
+                    opt.classList.add('incorrect');
+                    opt.querySelector('.option-letter').style.background = 'var(--danger-red)';
+                    opt.querySelector('.option-letter').innerHTML = '<i class="fas fa-times"></i>';
+                }
+            });
+            
+            // Tampilkan penjelasan
+            const resultMsg = document.getElementById('practiceResultMessage');
+            resultMsg.innerHTML = `
+                <div class="${isCorrect ? 'result-success' : 'result-fail'}" style="margin-bottom: 20px;">
+                    ${isCorrect ? 
+                        `<i class="fas fa-check-circle"></i> Bagus! +${CONFIG.pointsPerQuestion} poin.` : 
+                        `<i class="fas fa-times-circle"></i> Jawaban benar: ${letters[question.correct]}. ${question.options[question.correct]}`}
+                </div>
+                <div class="explanation-box">
+                    <h4><i class="fas fa-lightbulb"></i> Penjelasan Jawaban:</h4>
+                    <p>${question.explanation}</p>
+                </div>
+            `;
+            
+            // Update tombol
+            document.getElementById('submitPracticeBtn').style.display = 'none';
+            
+            const controlsDiv = document.querySelector('#latihanContent .quiz-controls');
+            controlsDiv.innerHTML = `
+                <button class="quiz-button next-btn" id="nextPracticeBtn">
+                    <i class="fas fa-forward"></i> ${state.currentIndex < CONFIG.questionsPerLevel - 1 ? 'Soal Berikutnya' : 'Selesai'}
+                </button>
+            `;
+            
+            document.getElementById('nextPracticeBtn').addEventListener('click', nextPracticeQuestion);
+        }
+
+        // Next question latihan
+        function nextPracticeQuestion() {
+            practiceState.currentIndex++;
+            practiceState.selectedAnswer = null;
+            
+            if (practiceState.currentIndex < CONFIG.questionsPerLevel) {
+                displayPracticeQuestion();
+            } else {
+                showPracticeResults();
+            }
+        }
+
+        // Tampilkan hasil latihan
+        function showPracticeResults() {
+            const latihanDiv = document.getElementById('latihanContent');
+            const state = practiceState;
+            const level = appState.currentLevel;
+            
+            appState.practiceScores[level] = Math.max(appState.practiceScores[level] || 0, state.score);
+            saveAppData();
+            
+            latihanDiv.innerHTML = `
+                <div style="text-align:center; padding:40px 20px;">
+                    <div style="font-size:4rem; color:var(--accent-orange); margin-bottom:20px;">
+                        💪
+                    </div>
+                    <h2 style="color:var(--accent-orange);">
+                        LATIHAN SELESAI!
+                    </h2>
+                    
+                    <div style="background:#fff9e6; padding:25px; border-radius:15px; margin:25px 0;">
+                        <p style="font-size:2.5rem; font-weight:bold; color:#856404;">
+                            Skor Latihan: ${state.score}/100
+                        </p>
+                        <p style="font-size:1.2rem; margin-top:15px;">
+                            <strong>Mode latihan tidak mempengaruhi pembukaan level.</strong><br>
+                            Gunakan untuk persiapan sebelum mengerjakan Kuis Penilaian!
+                        </p>
+                    </div>
+                    
+                    <div style="margin-top:30px;">
+                        <button class="quiz-button" onclick="retryPractice()" style="background:var(--accent-orange); margin:10px;">
+                            <i class="fas fa-redo"></i> Latihan Lagi
+                        </button>
+                        
+                        <button class="quiz-button" onclick="goToQuizFromPractice()" style="background:var(--accent-green); margin:10px;">
+                            <i class="fas fa-star"></i> Coba Kuis Penilaian
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== FUNGSI BANTUAN ====================
+
+        function resetQuiz() {
+            quizState = {
+                questions: [],
+                shuffledQuestions: [],
+                currentIndex: 0,
+                selectedAnswer: null,
+                score: 0,
+                userAnswers: []
+            };
+        }
+
+        function resetPractice() {
+            practiceState = {
+                questions: [],
+                shuffledQuestions: [],
+                currentIndex: 0,
+                selectedAnswer: null,
+                score: 0
+            };
+        }
+
+        function retryQuiz() {
+            resetQuiz();
+            loadQuizContent();
+        }
+
+        function retryPractice() {
+            resetPractice();
+            loadPracticeContent();
+        }
+
+        // SELESAI KUIS - KEMBALI KE MATERI
+        function finishQuiz() {
+            appState.isQuizActive = false;
+            updateTabAccess(false);
+            switchTab('materi');
+            // Tampilkan tombol kembali setelah selesai kuis
+            document.getElementById('backButton').classList.remove('hidden');
+        }
+
+        function goToNextLevel() {
+            if (appState.currentLevel < CONFIG.totalLevels) {
+                selectLevel(appState.currentLevel + 1);
+            }
+        }
+
+        function goToQuizFromPractice() {
+            switchTab('kuis');
+        }
+
+        // Kembali ke level selection
+        function goBackToLevels() {
+            document.getElementById('mainContent').classList.remove('active');
+            document.getElementById('levelContainer').style.opacity = '1';
+            renderLevelCards();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Fungsi untuk mencegah klik level selama kuis - EVENT LISTENER BARU
+        function setupLevelLock() {
+            const levelSection = document.getElementById('levelSection');
+            const levelContainer = document.getElementById('levelContainer');
+            
+            // Event delegation untuk menangani klik pada level cards
+            levelContainer.addEventListener('click', function(e) {
+                const levelCard = e.target.closest('.level-card');
+                if (!levelCard) return;
+                
+                // Jika kuis aktif, tampilkan overlay
+                if (appState.isQuizActive) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Hitung soal yang tersisa
+                    const remaining = CONFIG.questionsPerLevel - quizState.currentIndex;
+                    document.getElementById('remainingQuestions').textContent = remaining;
+                    
+                    // Tampilkan overlay
+                    document.getElementById('quizOverlay').classList.add('active');
+                    
+                    return false;
+                }
+            });
+        }
+
+        // ==================== INISIALISASI APLIKASI ====================
+
+        function initApp() {
+            loadAppData();
+            renderLevelCards();
+            
+            // Setup tab listeners
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        switchTab(this.getAttribute('data-tab'));
+                    }
+                });
+            });
+            
+            // Setup back button
+            document.getElementById('backButton').addEventListener('click', goBackToLevels);
+            
+            // Setup decision buttons
+            document.getElementById('goToPracticeBtn').addEventListener('click', () => {
+                switchTab('latihan');
+            });
+            
+            document.getElementById('goToQuizBtn').addEventListener('click', () => {
+                switchTab('kuis');
+            });
+            
+            // Setup level lock system
+            setupLevelLock();
+            
+            // Expose functions to global scope
+            window.startInspiration = startInspiration;
+            window.startExpiration = startExpiration;
+            window.retryQuiz = retryQuiz;
+            window.retryPractice = retryPractice;
+            window.finishQuiz = finishQuiz;
+            window.goToNextLevel = goToNextLevel;
+            window.goToQuizFromPractice = goToQuizFromPractice;
+            window.switchTab = switchTab;
+            window.closeOverlay = closeOverlay;
+            
+            console.log('Aplikasi Petualangan Oksigen siap!');
+        }
+
+        // Jalankan aplikasi
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
